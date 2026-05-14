@@ -29,14 +29,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -49,6 +45,10 @@ import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.IServerAddressStrategy;
 import ca.uhn.fhir.rest.server.interceptor.LoggingInterceptor;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -107,7 +107,7 @@ public class FhirRestServletTest {
 		
 		servlet = new TestableFhirRestServlet();
 		
-		when(mockServletConfig.getServletContext()).thenReturn(mock(javax.servlet.ServletContext.class));
+		when(mockServletConfig.getServletContext()).thenReturn(mock(jakarta.servlet.ServletContext.class));
 		when(mockResponse.getWriter()).thenReturn(mockWriter);
 		
 		// an unstubbed mock returns 0, which BasePagingProvider rejects
@@ -137,6 +137,7 @@ public class FhirRestServletTest {
 		when(mockRequest.getServletPath()).thenReturn("");
 		when(mockRequest.getContextPath()).thenReturn("");
 		when(mockRequest.getQueryString()).thenReturn("");
+		when(mockRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
 		
 		Thread.currentThread().setContextClassLoader(null);
 		assertNull(Thread.currentThread().getContextClassLoader());
