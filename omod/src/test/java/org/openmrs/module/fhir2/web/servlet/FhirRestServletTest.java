@@ -23,8 +23,8 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -60,9 +60,9 @@ import org.apache.logging.log4j.core.config.Property;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.Patient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openmrs.api.AdministrationService;
@@ -101,7 +101,7 @@ public class FhirRestServletTest {
 	
 	private GenericApplicationContext context;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws ServletException, IOException {
 		MockitoAnnotations.initMocks(this);
 		
@@ -119,7 +119,7 @@ public class FhirRestServletTest {
 		servlet.init(mockServletConfig);
 	}
 	
-	@After
+	@AfterEach
 	public void closeContext() {
 		if (context != null) {
 			context.close();
