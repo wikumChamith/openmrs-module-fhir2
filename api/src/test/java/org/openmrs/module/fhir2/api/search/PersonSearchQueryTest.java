@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -108,24 +109,16 @@ public class PersonSearchQueryTest extends BaseFhirContextSensitiveTest {
 	// Mirrors the DB ORDER BY on PersonName columns, which under H2's MySQL-mode collation is
 	// case-insensitive -- so lower-case 'o' in "of Cos" sorts between upper-case 'N' and 'P',
 	// not after 'Z' as Java's default String.compareTo would have it.
-	private static int compareIgnoreCase(String a, String b) {
-		if (a == null) {
-			return b == null ? 0 : 1;
-		}
-		if (b == null) {
-			return -1;
-		}
-		return a.compareToIgnoreCase(b);
-	}
+	private static final Comparator<String> NAME_PART = Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER);
 	
 	private static final ComparatorMatcherBuilder<HumanName> NAME_MATCHER = ComparatorMatcherBuilder.comparedBy((o1, o2) -> {
 		int ret;
-		ret = compareIgnoreCase(o1.getFamily(), o2.getFamily()); // familyName
+		ret = NAME_PART.compare(o1.getFamily(), o2.getFamily()); // familyName
 		
 		if (ret == 0) { // familyName2
 			if (o1.hasExtension(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyName2")
 			        && o2.hasExtension(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyName2")) {
-				ret = compareIgnoreCase(
+				ret = NAME_PART.compare(
 				    o1.getExtensionByUrl(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyName2").getValue().toString(),
 				    o2.getExtensionByUrl(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyName2").getValue().toString());
 			}
@@ -136,7 +129,7 @@ public class PersonSearchQueryTest extends BaseFhirContextSensitiveTest {
 		                // on the concatenated given-name-as-string.
 			int n = Math.min(o1.getGiven().size(), o2.getGiven().size());
 			for (int i = 0; i < n && ret == 0; i++) {
-				ret = compareIgnoreCase(o1.getGiven().get(i).getValue(), o2.getGiven().get(i).getValue());
+				ret = NAME_PART.compare(o1.getGiven().get(i).getValue(), o2.getGiven().get(i).getValue());
 			}
 			if (ret == 0) {
 				ret = Integer.compare(o1.getGiven().size(), o2.getGiven().size());
@@ -146,7 +139,7 @@ public class PersonSearchQueryTest extends BaseFhirContextSensitiveTest {
 		if (ret == 0) { // familyNamePrefix
 			if (o1.hasExtension(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNamePrefix")
 			        && o2.hasExtension(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNamePrefix")) {
-				ret = compareIgnoreCase(
+				ret = NAME_PART.compare(
 				    o1.getExtensionByUrl(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNamePrefix").getValue().toString(),
 				    o2.getExtensionByUrl(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNamePrefix").getValue().toString());
 			}
@@ -155,7 +148,7 @@ public class PersonSearchQueryTest extends BaseFhirContextSensitiveTest {
 		if (ret == 0) { // familyNameSuffix
 			if (o1.hasExtension(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNameSuffix")
 			        && o2.hasExtension(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNameSuffix")) {
-				ret = compareIgnoreCase(
+				ret = NAME_PART.compare(
 				    o1.getExtensionByUrl(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNameSuffix").getValue().toString(),
 				    o2.getExtensionByUrl(FhirConstants.OPENMRS_FHIR_EXT_NAME + "#familyNameSuffix").getValue().toString());
 			}

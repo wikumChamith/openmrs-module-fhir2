@@ -24,8 +24,9 @@ public class TestFhirSpringConfiguration {
 	@Autowired
 	private DataSource dataSource;
 	
-	// core's SchedulerConfig (ShedLock LockProvider) needs this table at context init; core's test base
-	// only creates it at @BeforeEach since the test schema comes from hbm2ddl, not liquibase
+	// Needed until core ships the shedlock table in its test schema (TRUNK-6554): core's SchedulerConfig
+	// (ShedLock LockProvider) needs this table at context init, but core's test base only creates it at
+	// @BeforeEach since the test schema comes from hbm2ddl, not liquibase
 	@PostConstruct
 	public void ensureShedlockTable() {
 		new JdbcTemplate(dataSource)

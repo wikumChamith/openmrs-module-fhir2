@@ -499,7 +499,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
+            <version>${slf4jVersion}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -891,6 +891,8 @@
         <openmrsPlatformToolsVersion>3.0.0-SNAPSHOT</openmrsPlatformToolsVersion>
         <hapifhirVersion>7.6.0</hapifhirVersion>
         <ucumVersion>1.0.10</ucumVersion>
+        <!-- keep in sync with slf4jVersion in openmrs-core's pom for the targeted platform -->
+        <slf4jVersion>1.7.36</slf4jVersion>
     </properties>
 
     <profiles>

@@ -24,7 +24,7 @@ public class IntegrationTestConfiguration {
 	
 	@Autowired
 	private DataSource dataSource;
-	
+
 	@PostConstruct
 	public void ensureShedlockTable() {
 		new JdbcTemplate(dataSource)

@@ -30,6 +30,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.openmrs.BaseOpenmrsData;
 import org.openmrs.Concept;
 import org.openmrs.Encounter;
@@ -53,8 +55,9 @@ public class FhirDiagnosticReport extends BaseOpenmrsData {
 	@Column(name = "diagnostic_report_id")
 	private Integer id;
 	
-	@Column(nullable = false, columnDefinition = "varchar(50)")
+	@Column(nullable = false, length = 50)
 	@Enumerated(EnumType.STRING)
+	@JdbcTypeCode(SqlTypes.VARCHAR)
 	private DiagnosticReportStatus status;
 	
 	@ManyToOne

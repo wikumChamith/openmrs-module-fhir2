@@ -2,9 +2,9 @@ name: Build with Maven
 
 on:
   push:
-    branches: [ master, platform-3 ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, platform-3 ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:

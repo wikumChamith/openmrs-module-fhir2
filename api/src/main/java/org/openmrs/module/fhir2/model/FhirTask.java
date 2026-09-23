@@ -31,6 +31,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.openmrs.BaseOpenmrsMetadata;
 import org.openmrs.Concept;
 
@@ -75,16 +77,18 @@ public class FhirTask extends BaseOpenmrsMetadata {
 	/**
 	 * The current status of the task.
 	 */
-	@Column(name = "status", nullable = false, columnDefinition = "varchar(255)")
+	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
+	@JdbcTypeCode(SqlTypes.VARCHAR)
 	private TaskStatus status;
 	
 	/**
 	 * Indicates the "level" of actionability associated with the Task, i.e. i+R[9]Cs this a proposed
 	 * task, a planned task, an actionable task, etc.
 	 */
-	@Column(name = "intent", nullable = false, columnDefinition = "varchar(255)")
+	@Column(name = "intent", nullable = false)
 	@Enumerated(EnumType.STRING)
+	@JdbcTypeCode(SqlTypes.VARCHAR)
 	private TaskIntent intent;
 	
 	/**
@@ -106,7 +110,7 @@ public class FhirTask extends BaseOpenmrsMetadata {
 	 * The entity who benefits from the performance of the service specified in the task (e.g., the
 	 * patient).
 	 */
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "for_reference_id", referencedColumnName = "reference_id")
 	private FhirReference forReference;
 	
@@ -114,14 +118,14 @@ public class FhirTask extends BaseOpenmrsMetadata {
 	 * The healthcare event (e.g. a patient and healthcare provider interaction) during which this task
 	 * was created.
 	 */
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "encounter_reference_id", referencedColumnName = "reference_id")
 	private FhirReference encounterReference;
 	
 	/**
 	 * Individual organization or Device currently responsible for task execution.
 	 */
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "owner_reference_id", referencedColumnName = "reference_id")
 	private FhirReference ownerReference;
 	
@@ -130,7 +134,7 @@ public class FhirTask extends BaseOpenmrsMetadata {
 	 * Observation or other resource that the task is focused on (e.g., the Observation that triggered
 	 * the creation of this nursing task).
 	 */
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "focus_reference_id", referencedColumnName = "reference_id")
 	private FhirReference focusReference;
 	
@@ -161,7 +165,7 @@ public class FhirTask extends BaseOpenmrsMetadata {
 	/**
 	 * The location Where task occurs
 	 */
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "location_reference_id", referencedColumnName = "reference_id")
 	private FhirReference locationReference;
 	

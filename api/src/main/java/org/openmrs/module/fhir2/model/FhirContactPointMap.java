@@ -21,6 +21,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.hl7.fhir.r4.model.ContactPoint.ContactPointSystem;
 import org.hl7.fhir.r4.model.ContactPoint.ContactPointUse;
 import org.openmrs.BaseOpenmrsData;
@@ -48,11 +50,13 @@ public class FhirContactPointMap extends BaseOpenmrsData {
 	private Integer attributeTypeId;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(length = 50, columnDefinition = "varchar(50)")
+	@JdbcTypeCode(SqlTypes.VARCHAR)
+	@Column(length = 50)
 	private ContactPointSystem system;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(length = 50, columnDefinition = "varchar(50)")
+	@JdbcTypeCode(SqlTypes.VARCHAR)
+	@Column(length = 50)
 	private ContactPointUse use;
 	
 	private Integer rank;
