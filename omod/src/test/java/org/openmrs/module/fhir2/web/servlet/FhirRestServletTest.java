@@ -215,6 +215,7 @@ public class FhirRestServletTest {
 		when(mockRequest.getServletPath()).thenReturn("");
 		when(mockRequest.getContextPath()).thenReturn("");
 		when(mockRequest.getQueryString()).thenReturn("");
+		when(mockRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
 		
 		refreshable.service(mockRequest, mockResponse);
 		
@@ -528,8 +529,7 @@ public class FhirRestServletTest {
 		Appender appender = collectErrorsInto(errors);
 		try {
 			servlet.registerInterceptors();
-		}
-		finally {
+		} finally {
 			stopCollecting(appender);
 		}
 		
@@ -572,6 +572,7 @@ public class FhirRestServletTest {
 		when(mockRequest.getServletPath()).thenReturn("");
 		when(mockRequest.getContextPath()).thenReturn("");
 		when(mockRequest.getQueryString()).thenReturn("");
+		when(mockRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
 	}
 	
 	private int bindingCountFor(FhirRestServlet servlet, String resourceName) {

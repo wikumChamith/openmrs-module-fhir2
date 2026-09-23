@@ -235,7 +235,7 @@ public class MedicationRequestFhirResourceProviderTest {
 		
 		when(fhirMedicationRequestService.searchForMedicationRequests(
 		    new MedicationRequestSearchParams(null, null, null, null, null, null, null, null, lastUpdated, null, null)))
-		            .thenReturn(new MockIBundleProvider<>(Collections.singletonList(medicationRequest), 10, 1));
+		        .thenReturn(new MockIBundleProvider<>(Collections.singletonList(medicationRequest), 10, 1));
 		
 		IBundleProvider results = resourceProvider.searchForMedicationRequests(null, null, null, null, null, null, null,
 		    null, null, lastUpdated, null, null);
@@ -256,7 +256,7 @@ public class MedicationRequestFhirResourceProviderTest {
 		
 		when(fhirMedicationRequestService.searchForMedicationRequests(
 		    new MedicationRequestSearchParams(null, null, null, null, null, null, null, null, null, includes, null)))
-		            .thenReturn(new MockIBundleProvider<>(Arrays.asList(medicationRequest, new Practitioner()), 10, 1));
+		        .thenReturn(new MockIBundleProvider<>(Arrays.asList(medicationRequest, new Practitioner()), 10, 1));
 		
 		IBundleProvider results = resourceProvider.searchForMedicationRequests(null, null, null, null, null, null, null,
 		    null, null, null, includes, null);
@@ -278,8 +278,7 @@ public class MedicationRequestFhirResourceProviderTest {
 		
 		when(fhirMedicationRequestService.searchForMedicationRequests(
 		    new MedicationRequestSearchParams(null, null, null, null, null, null, null, null, null, null, revIncludes)))
-		            .thenReturn(
-		                new MockIBundleProvider<>(Arrays.asList(medicationRequest, new MedicationDispense()), 10, 1));
+		        .thenReturn(new MockIBundleProvider<>(Arrays.asList(medicationRequest, new MedicationDispense()), 10, 1));
 		
 		IBundleProvider results = resourceProvider.searchForMedicationRequests(null, null, null, null, null, null, null,
 		    null, null, null, null, revIncludes);
@@ -300,7 +299,7 @@ public class MedicationRequestFhirResourceProviderTest {
 		
 		when(fhirMedicationRequestService.searchForMedicationRequests(
 		    new MedicationRequestSearchParams(null, null, null, null, null, null, null, null, null, null, null)))
-		            .thenReturn(new MockIBundleProvider<>(Collections.singletonList(medicationRequest), 10, 1));
+		        .thenReturn(new MockIBundleProvider<>(Collections.singletonList(medicationRequest), 10, 1));
 		
 		IBundleProvider results = resourceProvider.searchForMedicationRequests(null, null, null, null, null, null, null,
 		    null, null, null, includes, null);

@@ -215,8 +215,7 @@ public class FhirRestServlet extends RestfulServer implements ModuleLifecycleLis
 			        .forEach(getInterceptorService()::unregisterInterceptor);
 			
 			registerContributedInterceptors(current);
-		}
-		finally {
+		} finally {
 			// in the finally so that a throw cannot leave the field naming interceptors that are no longer
 			// on the server: the next call would skip unregistering the ones that are, orphaning them
 			registeredInterceptors.clear();
@@ -238,8 +237,7 @@ public class FhirRestServlet extends RestfulServer implements ModuleLifecycleLis
 		Map<String, Object> contributed;
 		try {
 			contributed = ctx.getBeansWithAnnotation(FhirInterceptor.class);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Could not read the contributed FHIR interceptors from the Spring context; none of them will run", e);
 			return;
 		}
@@ -268,8 +266,7 @@ public class FhirRestServlet extends RestfulServer implements ModuleLifecycleLis
 					            + "class and keep it clear of interface-based AOP.",
 					    beanName, interceptor.getClass().getName());
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Could not register contributed FHIR interceptor bean {} ({}); it will not run", beanName,
 				    interceptor.getClass().getName(), e);
 			}
