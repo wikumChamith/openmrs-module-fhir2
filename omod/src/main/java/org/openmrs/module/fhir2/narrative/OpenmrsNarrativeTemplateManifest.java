@@ -11,37 +11,51 @@ package org.openmrs.module.fhir2.narrative;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import ca.uhn.fhir.narrative2.NarrativeTemplateManifest;
+import ca.uhn.fhir.util.ClasspathUtil;
 import org.openmrs.util.OpenmrsUtil;
 
 /**
- * Loads narrative template property files into a HAPI FHIR {@link NarrativeTemplateManifest}.
+ * Builds a HAPI {@link NarrativeTemplateManifest} from narrative property files, adding support for
+ * the OpenMRS-specific {@code openmrs:} location prefix (accepted by
+ * {@code NarrativeUtils.getValidatedPropertiesFilePath()} for the
+ * {@code fhir2.narrativesOverridePropertyFile} global property) on top of HAPI's {@code classpath:}
+ * and {@code file:} prefixes.
  * <p>
- * HAPI's manifest loader only understands the {@code classpath:} and {@code file:} prefixes. This
- * facade additionally supports the OpenMRS-specific {@code openmrs:} prefix (accepted by
- * {@code NarrativeUtils#getValidatedPropertiesFilePath} for the
- * {@code fhir2.narrativesOverridePropertyFile} global property), resolving it against the OpenMRS
- * application data directory before delegating to HAPI.
+ * The prefix is honoured in two places: the location of the manifest file itself, and the
+ * {@code <name>.narrative} values inside it that point at template files. HAPI resolves template
+ * locations itself when a narrative is rendered and rejects unknown prefixes, so the manifest text
+ * is read here, {@code openmrs:} values are rewritten to {@code file:} locations under the OpenMRS
+ * application data directory, and the rewritten contents are handed to HAPI.
  */
 public final class OpenmrsNarrativeTemplateManifest {
 	
 	private static final String OPENMRS_PREFIX = "openmrs:";
+	
+	private static final String CLASSPATH_PREFIX = "classpath:";
+	
+	private static final String FILE_PREFIX = "file:";
 	
 	private OpenmrsNarrativeTemplateManifest() {
 	}
 	
 	public static NarrativeTemplateManifest forManifestFileLocation(Collection<String> propertyFilePaths)
 	        throws IOException {
-		List<String> resolvedPaths = new ArrayList<>(propertyFilePaths.size());
+		List<String> manifestContents = new ArrayList<>(propertyFilePaths.size());
 		for (String path : propertyFilePaths) {
-			resolvedPaths.add(resolveOpenmrsPath(path));
+			manifestContents.add(resolveTemplateLocations(loadResource(resolveOpenmrsPath(path))));
 		}
-		return NarrativeTemplateManifest.forManifestFileLocation(resolvedPaths);
+		return NarrativeTemplateManifest.forManifestFileContents(manifestContents);
 	}
 	
 	public static NarrativeTemplateManifest forManifestFileLocation(String... propertyFilePaths) throws IOException {
@@ -50,15 +64,55 @@ public final class OpenmrsNarrativeTemplateManifest {
 	
 	/**
 	 * Rewrites an {@code openmrs:<relative path>} location to a {@code file:} location under the
-	 * OpenMRS application data directory. Paths using any other prefix are returned unchanged for HAPI
-	 * to resolve.
+	 * OpenMRS application data directory. Locations using any other prefix are returned unchanged for
+	 * HAPI to resolve.
 	 */
-	private static String resolveOpenmrsPath(String path) {
+	static String resolveOpenmrsPath(String path) {
 		if (path != null && path.startsWith(OPENMRS_PREFIX)) {
 			File file = new File(OpenmrsUtil.getApplicationDataDirectory(), path.substring(OPENMRS_PREFIX.length()));
-			return "file:" + file.getAbsolutePath();
+			return FILE_PREFIX + file.getAbsolutePath();
 		}
 		
 		return path;
+	}
+	
+	/**
+	 * Rewrites every {@code openmrs:} property value in the manifest text (in practice the
+	 * {@code <name>.narrative} template locations) so that HAPI can load the templates.
+	 */
+	private static String resolveTemplateLocations(String manifestText) throws IOException {
+		Properties properties = new Properties();
+		properties.load(new StringReader(manifestText));
+		
+		boolean changed = false;
+		for (String key : properties.stringPropertyNames()) {
+			String value = properties.getProperty(key);
+			if (value != null && value.trim().startsWith(OPENMRS_PREFIX)) {
+				properties.setProperty(key, resolveOpenmrsPath(value.trim()));
+				changed = true;
+			}
+		}
+		
+		if (!changed) {
+			return manifestText;
+		}
+		
+		StringWriter writer = new StringWriter();
+		properties.store(writer, null);
+		return writer.toString();
+	}
+	
+	private static String loadResource(String location) throws IOException {
+		if (location.startsWith(CLASSPATH_PREFIX)) {
+			return ClasspathUtil.loadResource(location);
+		} else if (location.startsWith(FILE_PREFIX)) {
+			File file = new File(location.substring(FILE_PREFIX.length()));
+			if (!file.exists()) {
+				throw new IOException("File not found: " + file.getAbsolutePath());
+			}
+			return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+		}
+		
+		throw new IOException("Invalid resource name: '" + location + "' (must start with classpath:, file: or openmrs:)");
 	}
 }

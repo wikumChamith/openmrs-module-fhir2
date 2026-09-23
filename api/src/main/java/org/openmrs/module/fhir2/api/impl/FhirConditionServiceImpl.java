@@ -113,12 +113,17 @@ public class FhirConditionServiceImpl extends BaseFhirService<Condition, org.ope
 		}
 		
 		FhirUtils.OpenmrsConditionType result = FhirUtils.getOpenmrsConditionType(condition).orElse(null);
-		if (result != null && result.equals(FhirUtils.OpenmrsConditionType.DIAGNOSIS)) {
-			return diagnosisService.update(uuid, condition);
-		} else {
-			return super.update(uuid, condition);
+		
+		if (result == null) {
+			throw new InvalidRequestException(
+			        "Condition.category provided must be one of problem-list-item or encounter-diagnosis");
 		}
 		
+		if (result.equals(FhirUtils.OpenmrsConditionType.DIAGNOSIS)) {
+			return diagnosisService.update(uuid, condition);
+		}
+		
+		return super.update(uuid, condition);
 	}
 	
 	@Override

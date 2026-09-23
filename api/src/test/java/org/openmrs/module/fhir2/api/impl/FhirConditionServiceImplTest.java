@@ -309,6 +309,17 @@ public class FhirConditionServiceImplTest {
 	}
 	
 	@Test
+	public void update_shouldThrowExceptionWhenCategoryIsNotRecognised() {
+		org.hl7.fhir.r4.model.Condition condition = new org.hl7.fhir.r4.model.Condition();
+		condition.setId(CONDITION_UUID);
+		CodeableConcept category = new CodeableConcept();
+		category.addCoding(new Coding(FhirConstants.CONDITION_CATEGORY_SYSTEM_URI, "unknown-category", null));
+		condition.addCategory(category);
+		
+		assertThrows(InvalidRequestException.class, () -> conditionService.update(CONDITION_UUID, condition));
+	}
+	
+	@Test
 	public void update_shouldDelegateToDiagnosisServiceForDiagnosis() {
 		org.hl7.fhir.r4.model.Condition condition = new org.hl7.fhir.r4.model.Condition();
 		condition.setId(CONDITION_UUID);

@@ -45,7 +45,7 @@ public abstract class FhirTaskParam extends BaseOpenmrsMetadata {
 	@Column(name = "value_text")
 	protected String valueText;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "value_reference_id")
 	protected FhirReference valueReference;
 }

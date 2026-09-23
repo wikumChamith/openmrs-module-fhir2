@@ -10,17 +10,21 @@
 package org.openmrs.module.fhir2.api.translators.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.openmrs.module.fhir2.api.translators.impl.MedicationTranslatorImpl.DRUG_NAME_EXTENSION;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.exparity.hamcrest.date.DateMatchers;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -230,6 +234,26 @@ public class MedicationTranslatorImplTest {
 		assertThat(drug, notNullValue());
 		assertThat(drug.getIngredients().size(), greaterThanOrEqualTo(1));
 		assertThat(drug.getIngredients().iterator().next().getIngredient().getUuid(), equalTo(INGREDIENT_CONCEPT_UUID));
+	}
+	
+	@Test
+	public void toOpenmrsType_shouldRejectIngredientThatCannotBeMappedToConcept() {
+		CodeableConcept code = new CodeableConcept().addCoding(new Coding("http://example.org/unknown", "abc", ""));
+		
+		Medication medication = new Medication();
+		Medication.MedicationIngredientComponent ingredient = new Medication.MedicationIngredientComponent();
+		medication.addIngredient(ingredient.setItem(code));
+		
+		DrugIngredient existing = new DrugIngredient();
+		existing.setIngredient(new Concept());
+		drug.setIngredients(new HashSet<>(Collections.singleton(existing)));
+		
+		when(conceptTranslator.toOpenmrsType(code)).thenReturn(null);
+		
+		UnprocessableEntityException e = assertThrows(UnprocessableEntityException.class,
+		    () -> medicationTranslator.toOpenmrsType(drug, medication));
+		assertThat(e.getMessage(), containsString("http://example.org/unknown|abc"));
+		assertThat(drug.getIngredients().size(), equalTo(1));
 	}
 	
 	@Test

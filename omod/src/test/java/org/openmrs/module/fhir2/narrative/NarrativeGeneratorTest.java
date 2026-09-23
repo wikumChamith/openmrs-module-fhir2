@@ -16,6 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -26,11 +29,12 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.narrative2.INarrativeTemplate;
 import ca.uhn.fhir.narrative2.NarrativeTemplateManifest;
 import ca.uhn.fhir.narrative2.TemplateTypeEnum;
-import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import org.hl7.fhir.r4.model.BaseResource;
 import org.hl7.fhir.r4.model.Patient;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.openmrs.util.OpenmrsUtil;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
 /**
  * Tests for Narrative Generator (OpenMRSThymeleafNarrativeGenerator,
@@ -79,9 +83,45 @@ public class NarrativeGeneratorTest {
 		String givenPath = "openmrs:some/random/openmrs/path.properties";
 		File expectedFile = new File(OpenmrsUtil.getApplicationDataDirectory(), "some/random/openmrs/path.properties");
 		
-		Throwable e = assertThrows(InternalErrorException.class,
+		Throwable e = assertThrows(IOException.class,
 		    () -> OpenmrsNarrativeTemplateManifest.forManifestFileLocation(Collections.singletonList(givenPath)));
 		assertThat(e.getMessage(), containsString(expectedFile.getAbsolutePath()));
+	}
+	
+	/**
+	 * Check that {@code openmrs:} template locations inside an {@code openmrs:} manifest are resolved
+	 * too, since HAPI loads template files itself at render time and only understands classpath: and
+	 * file:
+	 */
+	@Test
+	public void shouldResolveOpenmrsPrefixedTemplateInsideOpenmrsPrefixedManifest(@TempDir Path appDataDir)
+	        throws IOException {
+		String previousAppDataDir = OpenmrsUtil.getApplicationDataDirectory();
+		try {
+			OpenmrsUtil.setApplicationDataDirectory(appDataDir.toString());
+			
+			Path narrativesDir = Files.createDirectories(appDataDir.resolve("narratives"));
+			String expectedNarrative = "<div>narrative from the application data directory</div>";
+			Files.write(narrativesDir.resolve("patient.html"), expectedNarrative.getBytes(StandardCharsets.UTF_8));
+			Files.write(narrativesDir.resolve("custom.properties"),
+			    ("patient.resourceType=Patient\n" + "patient.style=THYMELEAF\n"
+			            + "patient.narrative=openmrs:narratives/patient.html\n").getBytes(StandardCharsets.UTF_8));
+			
+			NarrativeTemplateManifest manifest = OpenmrsNarrativeTemplateManifest
+			        .forManifestFileLocation("openmrs:narratives/custom.properties");
+			INarrativeTemplate template = manifest.getTemplateByName(ctx, EnumSet.of(TemplateTypeEnum.THYMELEAF), "patient")
+			        .get(0);
+			
+			assertEquals(expectedNarrative, template.getTemplateText().trim());
+			
+			OpenmrsThymeleafNarrativeGenerator generator = new OpenmrsThymeleafNarrativeGenerator(
+			        new ReloadableResourceBundleMessageSource(), "openmrs:narratives/custom.properties");
+			Patient patient = new Patient();
+			generator.populateResourceNarrative(ctx, patient);
+			assertThat(patient.getText().getDivAsString(), containsString("narrative from the application data directory"));
+		} finally {
+			OpenmrsUtil.setApplicationDataDirectory(previousAppDataDir);
+		}
 	}
 	
 	/**

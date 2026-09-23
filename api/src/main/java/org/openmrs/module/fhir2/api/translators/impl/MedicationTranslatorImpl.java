@@ -19,9 +19,12 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import lombok.Getter;
 import lombok.Setter;
+import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Medication;
 import org.hl7.fhir.r4.model.StringType;
@@ -116,7 +119,8 @@ public class MedicationTranslatorImpl implements MedicationTranslator {
 			for (Medication.MedicationIngredientComponent ingredient : medication.getIngredient()) {
 				Concept ingredientConcept = conceptTranslator.toOpenmrsType(ingredient.getItemCodeableConcept());
 				if (ingredientConcept == null) {
-					continue;
+					throw new UnprocessableEntityException("Medication.ingredient item could not be mapped to a concept: "
+					        + describeCodings(ingredient.getItemCodeableConcept()));
 				}
 				
 				DrugIngredient omrsIngredient = new DrugIngredient();
@@ -135,6 +139,15 @@ public class MedicationTranslatorImpl implements MedicationTranslator {
 		        .forEach(e -> addMedicineComponent(existingDrug, e.getUrl(), ((StringType) e.getValue()).getValue())));
 		
 		return existingDrug;
+	}
+	
+	private static String describeCodings(CodeableConcept codeableConcept) {
+		if (codeableConcept == null || !codeableConcept.hasCoding()) {
+			return "<no coding>";
+		}
+		
+		return codeableConcept.getCoding().stream().map(c -> (c.hasSystem() ? c.getSystem() : "") + "|" + c.getCode())
+		        .collect(Collectors.joining(", "));
 	}
 	
 	public void addMedicineComponent(@Nonnull Drug drug, @Nonnull String url, @Nonnull String value) {
