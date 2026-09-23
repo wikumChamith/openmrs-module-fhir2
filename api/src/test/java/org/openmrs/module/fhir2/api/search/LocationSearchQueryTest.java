@@ -53,10 +53,8 @@ import org.openmrs.module.fhir2.FhirConstants;
 import org.openmrs.module.fhir2.api.dao.FhirLocationDao;
 import org.openmrs.module.fhir2.api.search.param.SearchParameterMap;
 import org.openmrs.module.fhir2.api.translators.LocationTranslator;
-import org.openmrs.test.SkipBaseSetup;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@SkipBaseSetup
 public class LocationSearchQueryTest extends BaseFhirContextSensitiveTest {
 	
 	public static final String LOCATION_UUID = "5db6ae3c-867e-45a0-a1ce-f86219b64e1c";
