@@ -1729,7 +1729,7 @@ public class ObservationSearchQueryTest extends BaseFhirContextSensitiveTest {
 		assertThat(results, notNullValue());
 		List<IBaseResource> resultList = get(results);
 		
-		assertThat(resultList.stream().map(r -> r.getIdElement().getIdPart()).collect(Collectors.toSet()),
+		assertThat(resultList.stream().map(r -> r.getIdElement().getIdPart()).toList(),
 		    containsInAnyOrder("2f616900-5e7c-4667-9a7f-dcb260abf1de", "2ed1e57d-9f18-41d3-b067-2eeaf4b30fb0",
 		        "dd5b7ba9-ba83-45e4-8960-e4232964a0ce"));
 		assertThat(getDistinctEncounterDatetime(resultList), lessThanOrEqualTo(2));
